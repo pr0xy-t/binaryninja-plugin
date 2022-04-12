@@ -40,11 +40,12 @@ def write_breakpoint(view, start, length):
 		log_error("Architecture %s not supported" % view.arch.name)
 		return
 
-	bkpt, err = view.arch.assemble(bkpt_str[view.arch.name])
+	bkpt = view.arch.assemble(bkpt_str[view.arch.name])
 	if bkpt is None:
 		log_error(err)
 		return
-	view.write(start, bkpt * length // len(bkpt))
+	for addr in range(start, start + length, len(bkpt)):
+		view.write(addr, bkpt)
 
 
 PluginCommand.register_for_range("Convert to breakpoint", "Fill region with breakpoint instructions.", write_breakpoint)
