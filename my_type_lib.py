@@ -2,7 +2,12 @@ import binaryninja
 from binaryninja import (typelibrary, platform)
 from binaryninja.enums import NamedTypeReferenceClass
 from binaryninja.types import Type, NamedTypeReferenceType, StructureBuilder, EnumerationBuilder
-from binaryninja import PluginCommand
+from binaryninja.interaction import show_plain_text_report, show_message_box
+from binaryninja.plugin import BackgroundTaskThread, PluginCommand
+from binaryninja.log import log_info
+import os
+import tempfile
+import requests
 
 BINJA_DIR = "/home/hi/tools/binaryninja/"
 
@@ -23,9 +28,23 @@ def create_typelib(fname, name, arch, guid, dependency_name, alternate_names, pl
     
     typelib.write_to_file(fname)
 
+def restore():
+    tl_path = BINJA_DIR + "typelib/x86_64/libc.so.6.bntl"
+    with open(tl_path, "wb") as f:
+        data = requests.get("https://github.com/pr0xy-t/binaryninja-plugin/releases/download/original_libc.so.6.bntl/libc.so.6.bntl").content
+        f.write(data)
+    log_info("[restore type library(libc.so.6.bntl)] finish")
+
 
 def build():
-    tl = typelibrary.TypeLibrary.load_from_file(BINJA_DIR + "typelib_backup/x86_64/libc.so.6.bntl")
+    tmp_dir =  tempfile.TemporaryDirectory()
+    tl_path = os.path.join(tmp_dir.name, "libc.so.6.bntl")
+    with open(tl_path, "wb") as f:
+        data = requests.get("https://github.com/pr0xy-t/binaryninja-plugin/releases/download/original_libc.so.6.bntl/libc.so.6.bntl").content
+        f.write(data)
+    log_info(f"[build type library(libc.so.6.bntl)] download {tl_path}")
+
+    tl = typelibrary.TypeLibrary.load_from_file(tl_path)
     arch = tl.arch
     ignore_list = ["open", "lseek", "mmap"]
     named_objects = {key:tl.named_objects[key] for key in tl.named_objects if not key in ignore_list }
@@ -59,7 +78,7 @@ def build():
     # lseek
     # off_t lseek(int fd, off_t offset, int whence)
     # off64_t lseek(int32_t fd, int64_t __arg2, int32_t whence)
-    enum_type_fd = EnumerationBuilder.create([], width=4, arch=arch, sign = False)
+    enum_type_fd = EnumerationBuilder.create([], width=4, arch=arch, sign = True)
     enum_type_fd.append("STDIN", 0)
     enum_type_fd.append("STDOUT", 1)
     enum_type_fd.append("STDERR", 2)
@@ -105,9 +124,30 @@ def build():
     named_objects["mmap"] = ftype
     
     
-    create_typelib(BINJA_DIR + "typelib/x86_64/_libc.so.6.bntl", tl.name, arch, tl.guid, tl.dependency_name, tl.alternate_names,tl.platform_names, named_objects, named_types)
-    
-def build_wrapper(bv):
-    build()
+    create_typelib(BINJA_DIR + "typelib/x86_64/libc.so.6.bntl", tl.name, arch, tl.guid, tl.dependency_name, tl.alternate_names,tl.platform_names, named_objects, named_types)
 
-PluginCommand.register("build type library", "build type library", build_wrapper)
+    log_info("[build type library(libc.so.6.bntl)] finish")
+    
+
+class Builder(BackgroundTaskThread):
+    def __init__(self):
+        BackgroundTaskThread.__init__(self, "Build typelib...", True)
+    def run(self):
+        build()
+
+class Restorer(BackgroundTaskThread):
+    def __init__(self):
+        BackgroundTaskThread.__init__(self, "Restore typelib...", True)
+    def run(self):
+        restore()
+
+def build_wrapper(bv):
+    b = Builder()
+    b.start()
+
+def restore_wrapper(bv):
+    r = Restorer()
+    r.start()
+
+PluginCommand.register("My type library\\build type library", "build type library", build_wrapper)
+PluginCommand.register("My type library\\restore libc type library", "restore libc type library", restore_wrapper)
