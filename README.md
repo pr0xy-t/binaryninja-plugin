@@ -14,8 +14,7 @@ Binaryninjaのlibc用の型ライブラリ(binaryninja/typelib/x86_64/libc.so.6.
 
 ## 使用方法 
 1. ./my_type_lib.pyをプラグインフォルダに入れる(Linuxなら~/.binaryninja/plugins/)
-2. ./my_type_lib.pyのBINJA_DIR変数を適宜変更 
-3. Binaryninja起動後にPlugins->My type library->build type libraryを選択
+2. Binaryninja起動後にPlugins->My type library->build type libraryを選択
 ![usage](./img/usage.png) 
 4. 次回Binaryninja起動後から改良した型ライブラリが適用される
 

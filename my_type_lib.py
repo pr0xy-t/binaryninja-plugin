@@ -9,7 +9,7 @@ import os
 import tempfile
 import requests
 
-BINJA_DIR = "/home/hi/tools/binaryninja/"
+BINJA_DIR = binaryninja.bundled_plugin_path().replace("/plugins", "/")
 
 def create_typelib(fname, name, arch, guid, dependency_name, alternate_names, platform_names, named_objects, named_types):
     typelib = typelibrary.TypeLibrary.new(arch, name)
