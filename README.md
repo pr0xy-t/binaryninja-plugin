@@ -1,5 +1,5 @@
 ## 概要
-Binaryninjaのlibc用の型ライブラリ(binaryninja/typelib/x86_64/libc.so.6.bntl)を改良した型ライブラリを作成/復元するPythonスクリプトです。
+Binaryninjaのlibc用の型ライブラリ(binaryninja/typelib/x86_64/libc.so.6.bntl)を改良した型ライブラリを作成/公式の型ライブラリに復元するPythonスクリプトです。
 
 改良した型ライブラリは、libcの関数で使われるint型の定数をenum型の定数に置き換えています。その結果、以下の画像のようにopen()のflag定数やmmap()のprot flag定数を見やすく表示することができます。
 
