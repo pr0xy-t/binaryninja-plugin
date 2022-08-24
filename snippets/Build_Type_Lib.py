@@ -11,7 +11,7 @@ import os
 import tempfile
 import requests
 
-BINJA_DIR = binaryninja.bundled_plugin_path().replace("/plugins", "/")
+BINJA_DIR = binaryninja.bundled_plugin_path().replace("/MacOS/plugins","/Resources/").replace("/plugins", "/")
 
 enums = {
         "flags_t": {

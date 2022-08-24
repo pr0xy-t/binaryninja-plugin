@@ -11,13 +11,14 @@ import os
 import tempfile
 import requests
 
-BINJA_DIR = binaryninja.bundled_plugin_path().replace("/plugins", "/")
+BINJA_DIR = binaryninja.bundled_plugin_path().replace("/MacOS/plugins","/Resources/").replace("/plugins", "/")
 
 def restore():
     tl_path = BINJA_DIR + "typelib/x86_64/libc.so.6.bntl"
     with open(tl_path, "wb") as f:
         data = requests.get("https://github.com/pr0xy-t/binaryninja-plugin/releases/download/original_libc.so.6.bntl/libc.so.6.bntl").content
         f.write(data)
+    log_info(f"[restore type library(libc.so.6.bntl)] download to {tl_path}")
     log_info("[restore type library(libc.so.6.bntl)] finish")
 
 class Restorer(BackgroundTaskThread):
